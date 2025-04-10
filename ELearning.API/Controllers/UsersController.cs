@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
 using System.Security.Claims;
+using ELearning.Services;
 
 namespace ELearning.API.Controllers
 {
@@ -20,7 +21,7 @@ namespace ELearning.API.Controllers
         }
 
         [HttpPost("register/instructor")]
-        public async Task<IActionResult> RegisterInstructor([FromBody] UserRegistrationDto registrationDto)
+        public async Task<ActionResult<BaseResult<string>>> RegisterInstructor([FromBody] UserRegistrationDto registrationDto)
         {
             try
             {
@@ -34,18 +35,20 @@ namespace ELearning.API.Controllers
                 };
 
                 var registeredUser = await _userService.RegisterUserAsync(user, registrationDto.Password);
-                var token = await _userService.GenerateJwtTokenAsync(registeredUser);
-
-                return Ok(new { user = registeredUser, token });
+                //var token = await _userService.GenerateJwtTokenAsync(registeredUser);
+                
+                var result = BaseResult<string>.Success(message: "Instructor registered successfully");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [HttpPost("register/student")]
-        public async Task<IActionResult> RegisterStudent([FromBody] UserRegistrationDto registrationDto)
+        public async Task<ActionResult<BaseResult<string>>> RegisterStudent([FromBody] UserRegistrationDto registrationDto)
         {
             try
             {
@@ -59,34 +62,52 @@ namespace ELearning.API.Controllers
                 };
 
                 var registeredUser = await _userService.RegisterUserAsync(user, registrationDto.Password);
-                var token = await _userService.GenerateJwtTokenAsync(registeredUser);
+                //var token = await _userService.GenerateJwtTokenAsync(registeredUser);
 
-                return Ok(new { user = registeredUser, token });
+                var result = BaseResult<string>.Success(message: "Student registered successfully");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
+        public async Task<ActionResult<BaseResult<LoginResponseDto>>> Login([FromBody] UserLoginDto loginDto)
         {
             try
             {
                 var user = await _userService.AuthenticateUserAsync(loginDto.Username, loginDto.Password);
                 var token = await _userService.GenerateJwtTokenAsync(user);
-
-                return Ok(new { user, token });
+                var dto = new LoginResponseDto
+                {
+                    User = new UserResponseDto
+                    {
+                        Id = user.Id,
+                        Username = user.Username,
+                        Email = user.Email,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        ProfilePictureUrl = user.ProfilePictureUrl,
+                        Bio = user.Bio
+                    },
+                    Token = token,
+                    Role = user.Role
+                };
+                var result = BaseResult<LoginResponseDto>.Success(dto);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return Unauthorized(new { message = ex.Message });
+                var result = BaseResult<LoginResponseDto>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("profile")]
-        public async Task<IActionResult> GetProfile()
+        public async Task<ActionResult<BaseResult<UserResponseDto>>> GetProfile()
         {
             try
             {
@@ -102,17 +123,19 @@ namespace ELearning.API.Controllers
                     ProfilePictureUrl = user.ProfilePictureUrl,
                     Bio = user.Bio
                 };
-                return Ok(dto);
+                var result = BaseResult<UserResponseDto>.Success(dto);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<UserResponseDto>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserProfileUpdateDto profileDto)
+        public async Task<ActionResult<BaseResult<string>>> UpdateProfile([FromBody] UserProfileUpdateDto profileDto)
         {
             try
             {
@@ -136,49 +159,74 @@ namespace ELearning.API.Controllers
 
         [Authorize]
         [HttpPut("change-password")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto passwordDto)
+        public async Task<ActionResult<BaseResult<string>>> ChangePassword([FromBody] ChangePasswordDto passwordDto)
         {
             try
             {
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 await _userService.ChangePasswordAsync(userId, passwordDto.CurrentPassword, passwordDto.NewPassword);
-                return Ok(new { message = "Password changed successfully" });
+                var result = BaseResult<string>.Success(message: "Password changed successfully");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<ActionResult<BaseResult<IEnumerable<UserResponseDto>>>> GetAllUsers()
         {
             try
             {
                 var users = await _userService.GetAllUsersAsync();
-                return Ok(users);
+                var dtos = users.Select(
+                    user => new UserResponseDto
+                    {
+                        Id = user.Id,
+                        Username = user.Username,
+                        Email = user.Email,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        ProfilePictureUrl = user.ProfilePictureUrl,
+                        Bio = user.Bio
+                    }
+                    );
+                var result = BaseResult<IEnumerable<UserResponseDto>>.Success(dtos);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{userId}/status")]
-        public async Task<IActionResult> UpdateUserStatus(int userId, [FromBody] bool isActive)
+        public async Task<ActionResult<BaseResult<string>>> UpdateUserStatus(int userId, [FromBody] bool isActive)
         {
             try
             {
                 await _userService.UpdateUserStatusAsync(userId, isActive);
-                return Ok(new { message = "User status updated successfully" });
+                var result = BaseResult<string>.Success(message:"User status updated successfully");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
+    }
+
+    public class LoginResponseDto
+    {
+        public UserResponseDto User { get; set; }
+        public string Token { get; set; }
+        public string Role { get; set; }
     }
 
     public class UserRegistrationDto

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
+using ELearning.Services;
 
 namespace ELearning.API.Controllers
 {
@@ -24,7 +25,7 @@ namespace ELearning.API.Controllers
 
         [Authorize(Roles = "Instructor")]
         [HttpPost]
-        public async Task<IActionResult> CreateLesson([FromBody] LessonCreateDto lessonDto)
+        public async Task<ActionResult<BaseResult<Lesson>>> CreateLesson([FromBody] LessonCreateDto lessonDto)
         {
             try
             {
@@ -49,17 +50,19 @@ namespace ELearning.API.Controllers
                 };
 
                 var createdLesson = await _lessonService.CreateLessonAsync(lesson);
-                return CreatedAtAction(nameof(GetLessonById), new { id = createdLesson.Id }, createdLesson);
+                var result = BaseResult<Lesson>.Success(createdLesson);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<Lesson>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Instructor")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateLesson(int id, [FromBody] LessonUpdateDto lessonDto)
+        public async Task<ActionResult<BaseResult<Lesson>>> UpdateLesson(int id, [FromBody] LessonUpdateDto lessonDto)
         {
             try
             {
@@ -81,17 +84,19 @@ namespace ELearning.API.Controllers
                 lesson.Order = lessonDto.Order;
 
                 var updatedLesson = await _lessonService.UpdateLessonAsync(id, lesson);
-                return Ok(updatedLesson);
+                var result = BaseResult<Lesson>.Success(updatedLesson);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<Lesson>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Instructor")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLesson(int id)
+        public async Task<ActionResult<BaseResult<string>>> DeleteLesson(int id)
         {
             try
             {
@@ -99,57 +104,72 @@ namespace ELearning.API.Controllers
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
 
                 if (lesson == null)
-                    return NotFound(new { message = "Lesson not found" });
+                {
+                    var rr = BaseResult<string>.Fail(["Lesson not found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
                 if (course.InstructorId != instructorId)
-                    return Forbid();
+                {
+                    var rr = BaseResult<string>.Fail(["Forbidden"]);
+                    return StatusCode(rr.StatusCode, rr);
+                } 
 
                 await _lessonService.DeleteLessonAsync(id);
-                return Ok(new { message = "Lesson deleted successfully" });
+                var result = BaseResult<string>.Success(message: "Lesson deleted successfully");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetLessonById(int id)
+        public async Task<ActionResult<BaseResult<Lesson>>> GetLessonById(int id)
         {
             try
             {
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
                 if (lesson == null)
-                    return NotFound(new { message = "Lesson not found" });
+                {
+                    var rr = BaseResult<Lesson>.Fail(["Lesson is not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
-                return Ok(lesson);
+                var result = BaseResult<Lesson>.Success(lesson);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<Lesson>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("course/{courseId}")]
-        public async Task<IActionResult> GetLessonsByCourse(int courseId)
+        public async Task<ActionResult<BaseResult<IEnumerable<Lesson>>>> GetLessonsByCourse(int courseId)
         {
             try
             {
                 var lessons = await _lessonService.GetLessonsByCourseAsync(courseId);
-                return Ok(lessons);
+                var result = BaseResult<IEnumerable<Lesson>>.Success(lessons);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<IEnumerable<Lesson>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Student")]
         [HttpPost("{id}/complete")]
-        public async Task<IActionResult> MarkLessonAsCompleted(int id)
+        public async Task<ActionResult<BaseResult<string>>> MarkLessonAsCompleted(int id)
         {
             try
             {
@@ -157,24 +177,32 @@ namespace ELearning.API.Controllers
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
 
                 if (lesson == null)
-                    return NotFound(new { message = "Lesson not found" });
+                {
+                    var rr = BaseResult<string>.Fail(["Lesson Not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
                 if (!await _courseService.IsStudentEnrolledAsync(course.Id, studentId))
-                    return Forbid();
+                {
+                    var rr = BaseResult<string>.Fail(["Forbidden"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 await _lessonService.MarkLessonAsCompletedAsync(id, studentId);
-                return Ok(new { message = "Lesson marked as completed" });
+                var result = BaseResult<string>.Success(message: "Lesson marked as completed");
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Student")]
         [HttpPost("{id}/quiz/submit")]
-        public async Task<IActionResult> SubmitQuizAnswers(int id, [FromBody] Dictionary<int, int> userAnswers)
+        public async Task<ActionResult<BaseResult<int>>> SubmitQuizAnswers(int id, [FromBody] Dictionary<int, int> userAnswers)
         {
             try
             {
@@ -182,27 +210,38 @@ namespace ELearning.API.Controllers
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
 
                 if (lesson == null)
-                    return NotFound(new { message = "Lesson not found" });
+                {
+                    var rr = BaseResult<int>.Fail(["Lesson Not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 if (!lesson.IsQuiz)
-                    return BadRequest(new { message = "This lesson does not contain a quiz" });
+                {
+                    var rr = BaseResult<int>.Fail(["This lesson does not contain a quiz"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
                 if (!await _courseService.IsStudentEnrolledAsync(course.Id, studentId))
-                    return Forbid();
+                {
+                    var rr = BaseResult<int>.Fail(["Forbidden"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var score = await _lessonService.SubmitQuizAnswersAsync(id, studentId, userAnswers);
-                return Ok(new { score });
+                var result = BaseResult<int>.Success(score);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<int>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("{id}/progress")]
-        public async Task<IActionResult> GetLessonProgress(int id)
+        public async Task<ActionResult<BaseResult<LessonProgress>>> GetLessonProgress(int id)
         {
             try
             {
@@ -210,24 +249,32 @@ namespace ELearning.API.Controllers
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
 
                 if (lesson == null)
-                    return NotFound(new { message = "Lesson not found" });
+                {
+                    var rr = BaseResult<LessonProgress>.Fail(["Lesson Not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
                 if (!await _courseService.IsStudentEnrolledAsync(course.Id, userId))
-                    return Forbid();
+                {
+                    var rr = BaseResult<LessonProgress>.Fail(["Forbidden"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var progress = await _lessonService.GetLessonProgressAsync(id, userId);
-                return Ok(progress);
+                var result = BaseResult<LessonProgress>.Success(progress);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<LessonProgress>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("course/{courseId}/progress")]
-        public async Task<IActionResult> GetCourseProgress(int courseId)
+        public async Task<ActionResult<BaseResult<decimal>>> GetCourseProgress(int courseId)
         {
             try
             {
@@ -235,17 +282,26 @@ namespace ELearning.API.Controllers
                 var course = await _courseService.GetCourseByIdAsync(courseId);
 
                 if (course == null)
-                    return NotFound(new { message = "Course not found" });
+                {
+                    var rr = BaseResult<decimal>.Fail(["Course Not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 if (!await _courseService.IsStudentEnrolledAsync(courseId, userId))
-                    return Forbid();
+                {
+                    var rr = BaseResult<decimal>.Fail(["Forbidden"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
                 var progress = await _lessonService.GetCourseProgressAsync(courseId, userId);
-                return Ok(new { progress });
+
+                var result = BaseResult<decimal>.Success(progress);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<decimal>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
     }

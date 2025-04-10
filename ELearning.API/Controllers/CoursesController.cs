@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
 using System.Security.Claims;
+using ELearning.Services;
 
 namespace ELearning.API.Controllers
 {
@@ -21,39 +22,46 @@ namespace ELearning.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCourses()
+        public async Task<ActionResult<BaseResult<IEnumerable<Course>>>> GetAllCourses()
         {
             try
             {
                 var courses = await _courseService.GetAllCoursesAsync();
-                return Ok(courses);
+                var result = BaseResult<IEnumerable<Course>>.Success(courses);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCourseById(int id)
+        public async Task<ActionResult<BaseResult<Course>>> GetCourseById(int id)
         {
             try
             {
                 var course = await _courseService.GetCourseByIdAsync(id);
                 if (course == null)
-                    return NotFound(new { message = "Course not found" });
+                {
+                    var rr = BaseResult<Course>.Fail(["Course is not Found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
 
-                return Ok(course);
+                var result = BaseResult<Course>.Success(course);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var rr = BaseResult<Course>.Fail([ex.Message]);
+                return StatusCode(rr.StatusCode, rr);
             }
         }
 
         [Authorize(Roles = "Instructor")]
         [HttpPost]
-        public async Task<IActionResult> CreateCourse([FromBody] CourseCreateDto courseDto)
+        public async Task<ActionResult<BaseResult<Course>>> CreateCourse([FromBody] CourseCreateDto courseDto)
         {
             try
             {
@@ -70,17 +78,20 @@ namespace ELearning.API.Controllers
                 };
 
                 var createdCourse = await _courseService.CreateCourseAsync(course);
-                return CreatedAtAction(nameof(GetCourseById), new { id = createdCourse.Id }, createdCourse);
+                var result = BaseResult<Course>.Success(createdCourse);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<Course>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+
             }
         }
 
         [Authorize(Roles = "Instructor")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromBody] CourseUpdateDto courseDto)
+        public async Task<ActionResult<BaseResult<Course>>> UpdateCourse(int id, [FromBody] CourseUpdateDto courseDto)
         {
             try
             {
@@ -102,17 +113,21 @@ namespace ELearning.API.Controllers
                 course.IsPublished = courseDto.IsPublished;
 
                 var updatedCourse = await _courseService.UpdateCourseAsync(id, course);
-                return Ok(updatedCourse);
+                var result = BaseResult<Course>.Success(updatedCourse);
+                return StatusCode(result.StatusCode, result);
+
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<Course>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+
             }
         }
 
         [Authorize(Roles = "Instructor")]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCourse(int id)
+        public async Task<ActionResult<BaseResult<string>>> DeleteCourse(int id)
         {
             try
             {
@@ -126,49 +141,59 @@ namespace ELearning.API.Controllers
                     return Forbid();
 
                 await _courseService.DeleteCourseAsync(id);
-                return Ok(new { message = "Course deleted successfully" });
+                var result = BaseResult<string>.Success(message: "Course deleted successfully");
+                return StatusCode(result.StatusCode, result);
+
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+
             }
         }
 
         [Authorize(Roles = "Student")]
         [HttpPost("{id}/enroll")]
-        public async Task<IActionResult> EnrollInCourse(int id)
+        public async Task<ActionResult<BaseResult<string>>> EnrollInCourse(int id)
         {
             try
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 await _courseService.EnrollStudentInCourseAsync(id, studentId);
-                return Ok(new { message = "Successfully enrolled in the course" });
+                var result = BaseResult<string>.Success(message: "Successfully enrolled in the course");
+                return StatusCode(result.StatusCode, result);
+
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize(Roles = "Student")]
         [HttpPost("{id}/unenroll")]
-        public async Task<IActionResult> UnenrollFromCourse(int id)
+        public async Task<ActionResult<BaseResult<string>>> UnenrollFromCourse(int id)
         {
             try
             {
                 var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 await _courseService.UnenrollStudentFromCourseAsync(id, studentId);
-                return Ok(new { message = "Successfully unenrolled from the course" });
+                var result = BaseResult<string>.Success(message: "Successfully unenrolled from the course");
+                return StatusCode(result.StatusCode, result);
+
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("my-courses")]
-        public async Task<IActionResult> GetMyCourses()
+        public async Task<ActionResult<BaseResult<IEnumerable<Course>>>> GetMyCourses()
         {
             try
             {
@@ -181,25 +206,29 @@ namespace ELearning.API.Controllers
                 else
                     courses = await _courseService.GetEnrolledCoursesAsync(userId);
 
-                return Ok(courses);
+                var result = BaseResult<IEnumerable<Course>>.Success(courses);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchCourses([FromQuery] string searchTerm)
+        public async Task<ActionResult<BaseResult<IEnumerable<Course>>>> SearchCourses([FromQuery] string searchTerm)
         {
             try
             {
                 var courses = await _courseService.SearchCoursesAsync(searchTerm);
-                return Ok(courses);
+                var result = BaseResult<IEnumerable<Course>>.Success(courses);
+                return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
             }
         }
     }
