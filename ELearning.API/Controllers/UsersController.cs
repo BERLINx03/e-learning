@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
+using System.Security.Claims;
 
 namespace ELearning.API.Controllers
 {

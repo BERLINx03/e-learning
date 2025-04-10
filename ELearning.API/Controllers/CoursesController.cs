@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
+using System.Security.Claims;
 
 namespace ELearning.API.Controllers
 {
@@ -24,7 +25,8 @@ namespace ELearning.API.Controllers
         {
             try
             {
-                var courses = await _courseService.GetAllCoursesAsync();
+                //var courses = await _courseService.GetAllCoursesAsync();
+                Course courses = null;
                 return Ok(courses);
             }
             catch (Exception ex)
@@ -209,7 +211,7 @@ namespace ELearning.API.Controllers
         public string Description { get; set; }
         public string Category { get; set; }
         public string Level { get; set; }
-        public decimal Price { get; set; }
+        public long Price { get; set; }
         public string ThumbnailUrl { get; set; }
     }
 
@@ -219,7 +221,7 @@ namespace ELearning.API.Controllers
         public string Description { get; set; }
         public string Category { get; set; }
         public string Level { get; set; }
-        public decimal Price { get; set; }
+        public long Price { get; set; }
         public string ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }
     }

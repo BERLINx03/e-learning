@@ -9,7 +9,7 @@ namespace ELearning.Repositories.Interfaces
         Task<IEnumerable<Lesson>> GetLessonsByCourseAsync(int courseId);
         Task<LessonProgress> GetLessonProgressAsync(int lessonId, int enrollmentId);
         Task<bool> IsLessonCompletedAsync(int lessonId, int enrollmentId);
-        Task<decimal> CalculateQuizScoreAsync(int lessonId, Dictionary<int, int> userAnswers);
+        Task<int> CalculateQuizScoreAsync(int lessonId, Dictionary<int, int> userAnswers);
         Task<IEnumerable<QuizQuestion>> GetQuizQuestionsAsync(int lessonId);
         Task AddProgressAsync(LessonProgress progress);
         void UpdateProgress(LessonProgress progress);

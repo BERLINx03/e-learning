@@ -24,7 +24,7 @@ namespace ELearning.Services
             _userRepository = userRepository;
         }
 
-        public async Task CreateLessonAsync(Lesson lesson)
+        public async Task<Lesson> CreateLessonAsync(Lesson lesson)
         {
             var course = await _courseRepository.GetByIdAsync(lesson.CourseId);
             if (course == null)
@@ -32,6 +32,7 @@ namespace ELearning.Services
 
             lesson.CreatedAt = DateTime.UtcNow;
             await _lessonRepository.AddAsync(lesson);
+            return lesson;
         }
 
         public async Task<Lesson> UpdateLessonAsync(int lessonId, Lesson updatedLesson)
@@ -151,7 +152,7 @@ namespace ELearning.Services
             await _lessonRepository.SaveChangesAsync();
         }
 
-        public async Task<decimal> SubmitQuizAnswersAsync(int lessonId, int enrollmentId, Dictionary<int, int> userAnswers)
+        public async Task<int> SubmitQuizAnswersAsync(int lessonId, int enrollmentId, Dictionary<int, int> userAnswers)
         {
             var score = await _lessonRepository.CalculateQuizScoreAsync(lessonId, userAnswers);
 

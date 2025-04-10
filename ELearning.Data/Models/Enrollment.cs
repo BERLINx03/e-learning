@@ -7,15 +7,15 @@ namespace ELearning.Data.Models
     {
         public int Id { get; set; }
         public int StudentId { get; set; }
-        public User Student { get; set; }
+        public User? Student { get; set; }
         public int CourseId { get; set; }
-        public Course Course { get; set; }
-        public DateTime EnrolledAt { get; set; }
+        public Course? Course { get; set; }
+        public DateTime? EnrolledAt { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime? CompletedAt { get; set; }
-        public decimal? FinalGrade { get; set; }
-        public Certificate Certificate { get; set; }
-        public ICollection<LessonProgress> Progress { get; set; }
+        public int? FinalGrade { get; set; }
+        public Certificate? Certificate { get; set; }
+        public ICollection<LessonProgress>? Progress { get; set; }
     }
 
     public class Certificate
@@ -37,6 +37,6 @@ namespace ELearning.Data.Models
         public Lesson Lesson { get; set; }
         public bool IsCompleted { get; set; }
         public DateTime? CompletedAt { get; set; }
-        public decimal? QuizScore { get; set; }
+        public int? QuizScore { get; set; }
     }
 }

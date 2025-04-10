@@ -35,7 +35,7 @@ namespace ELearning.Repositories
             return progress?.IsCompleted ?? false;
         }
 
-        public async Task<decimal> CalculateQuizScoreAsync(int lessonId, Dictionary<int, int> userAnswers)
+        public async Task<int> CalculateQuizScoreAsync(int lessonId, Dictionary<int, int> userAnswers)
         {
             var questions = await _context.Set<QuizQuestion>()
                 .Where(q => q.LessonId == lessonId)
@@ -57,7 +57,7 @@ namespace ELearning.Repositories
                 }
             }
 
-            return (decimal)correctAnswers / questions.Count * 100;
+            return (int)correctAnswers / questions.Count * 100;
         }
 
         public async Task<IEnumerable<QuizQuestion>> GetQuizQuestionsAsync(int lessonId)
