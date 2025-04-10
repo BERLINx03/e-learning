@@ -19,8 +19,8 @@ namespace ELearning.API.Controllers
             _userService = userService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
+        [HttpPost("register/instructor")]
+        public async Task<IActionResult> RegisterInstructor([FromBody] UserRegistrationDto registrationDto)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace ELearning.API.Controllers
                     Email = registrationDto.Email,
                     FirstName = registrationDto.FirstName,
                     LastName = registrationDto.LastName,
-                    Role = registrationDto.Role
+                    Role = "Instructor"
                 };
 
                 var registeredUser = await _userService.RegisterUserAsync(user, registrationDto.Password);
@@ -44,6 +44,30 @@ namespace ELearning.API.Controllers
             }
         }
 
+        [HttpPost("register/student")]
+        public async Task<IActionResult> RegisterStudent([FromBody] UserRegistrationDto registrationDto)
+        {
+            try
+            {
+                var user = new User
+                {
+                    Username = registrationDto.Username,
+                    Email = registrationDto.Email,
+                    FirstName = registrationDto.FirstName,
+                    LastName = registrationDto.LastName,
+                    Role = "Student"
+                };
+
+                var registeredUser = await _userService.RegisterUserAsync(user, registrationDto.Password);
+                var token = await _userService.GenerateJwtTokenAsync(registeredUser);
+
+                return Ok(new { user = registeredUser, token });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
@@ -68,7 +92,17 @@ namespace ELearning.API.Controllers
             {
                 var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
                 var user = await _userService.GetUserByIdAsync(userId);
-                return Ok(user);
+                var dto = new UserResponseDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    Bio = user.Bio
+                };
+                return Ok(dto);
             }
             catch (Exception ex)
             {
@@ -154,7 +188,16 @@ namespace ELearning.API.Controllers
         public string Password { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Role { get; set; }
+    }
+    public class UserResponseDto
+    {
+        public int Id { get; set; }
+        public string? Username { get; set; }
+        public string? Email { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfilePictureUrl { get; set; }
+        public string? Bio { get; set; }
     }
 
     public class UserLoginDto

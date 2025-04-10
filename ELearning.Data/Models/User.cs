@@ -14,7 +14,7 @@ namespace ELearning.Data.Models
         public DateTime? CreatedAt { get; set; }
         public DateTime? LastLogin { get; set; }
         public bool IsActive { get; set; }
-        public string? Role { get; set; } // "Admin", "Instructor", "Student"
+        public string? Role { get; set; } // "Instructor", "Student"
         public DateTime? TimeoutUntil { get; set; } // For admin timeout functionality
         public string? ProfilePictureUrl { get; set; }
         public string? Bio { get; set; }
