@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
 using ELearning.Services;
-
+using ELearning.Services.Dtos;
 namespace ELearning.API.Controllers
 {
     [Route("api/[controller]")]
@@ -25,7 +25,7 @@ namespace ELearning.API.Controllers
 
         [Authorize(Roles = "Instructor")]
         [HttpPost]
-        public async Task<ActionResult<BaseResult<Lesson>>> CreateLesson([FromBody] LessonCreateDto lessonDto)
+        public async Task<ActionResult<BaseResult<LessonResponseDto>>> CreateLesson([FromBody] LessonCreateDto lessonDto)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace ELearning.API.Controllers
                 };
 
                 var createdLesson = await _lessonService.CreateLessonAsync(lesson);
-                var result = BaseResult<Lesson>.Success(createdLesson);
+                var result = BaseResult<LessonResponseDto>.Success(MapLessonToDto(createdLesson));
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace ELearning.API.Controllers
 
         [Authorize(Roles = "Instructor")]
         [HttpPut("{id}")]
-        public async Task<ActionResult<BaseResult<Lesson>>> UpdateLesson(int id, [FromBody] LessonUpdateDto lessonDto)
+        public async Task<ActionResult<BaseResult<LessonResponseDto>>> UpdateLesson(int id, [FromBody] LessonUpdateDto lessonDto)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace ELearning.API.Controllers
                 lesson.Order = lessonDto.Order;
 
                 var updatedLesson = await _lessonService.UpdateLessonAsync(id, lesson);
-                var result = BaseResult<Lesson>.Success(updatedLesson);
+                var result = BaseResult<LessonResponseDto>.Success(MapLessonToDto(updatedLesson));
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
@@ -129,40 +129,40 @@ namespace ELearning.API.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<ActionResult<BaseResult<Lesson>>> GetLessonById(int id)
+        public async Task<ActionResult<BaseResult<LessonResponseDto>>> GetLessonById(int id)
         {
             try
             {
                 var lesson = await _lessonService.GetLessonByIdAsync(id);
                 if (lesson == null)
                 {
-                    var rr = BaseResult<Lesson>.Fail(["Lesson is not Found"]);
+                    var rr = BaseResult<LessonResponseDto>.Fail(["Lesson is not Found"]);
                     return StatusCode(rr.StatusCode, rr);
                 }
 
-                var result = BaseResult<Lesson>.Success(lesson);
+                var result = BaseResult<LessonResponseDto>.Success(MapLessonToDto(lesson));
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                var result = BaseResult<Lesson>.Fail([ex.Message]);
+                var result = BaseResult<LessonResponseDto>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
 
         [Authorize]
         [HttpGet("course/{courseId}")]
-        public async Task<ActionResult<BaseResult<IEnumerable<Lesson>>>> GetLessonsByCourse(int courseId)
+        public async Task<ActionResult<BaseResult<IEnumerable<LessonResponseDto>>>> GetLessonsByCourse(int courseId)
         {
             try
             {
                 var lessons = await _lessonService.GetLessonsByCourseAsync(courseId);
-                var result = BaseResult<IEnumerable<Lesson>>.Success(lessons);
+                var result = BaseResult<IEnumerable<LessonResponseDto>>.Success(lessons.Select(MapLessonToDto));
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                var result = BaseResult<IEnumerable<Lesson>>.Fail([ex.Message]);
+                var result = BaseResult<IEnumerable<LessonResponseDto>>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
@@ -304,6 +304,20 @@ namespace ELearning.API.Controllers
                 return StatusCode(result.StatusCode, result);
             }
         }
+        
+        private LessonResponseDto MapLessonToDto(Lesson lesson)
+    {
+        return new LessonResponseDto{
+            Id = lesson.Id,
+            Title = lesson.Title,
+            Content = lesson.Content,
+            Description = lesson.Description,
+            CourseId = lesson.CourseId,
+            Order = lesson.Order,
+            VideoUrl = lesson.VideoUrl,
+            DocumentUrl = lesson.DocumentUrl,
+        };
+    }
     }
 
     public class LessonCreateDto

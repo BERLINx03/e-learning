@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
-
+using ELearning.Services.Dtos;
 namespace ELearning.Services.Interfaces
 {
     public interface ILessonService
