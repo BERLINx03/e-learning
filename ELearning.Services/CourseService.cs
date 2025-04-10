@@ -168,5 +168,10 @@ namespace ELearning.Services
         {
             return await _courseRepository.GetCourseMessagesAsync(courseId);
         }
+
+        public Task<IEnumerable<Course>> GetAllCoursesAsync()
+        {
+            return _courseRepository.GetAllAsync();
+        }
     }
 }

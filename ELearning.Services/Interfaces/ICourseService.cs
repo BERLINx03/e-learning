@@ -6,6 +6,7 @@ namespace ELearning.Services.Interfaces
 {
     public interface ICourseService
     {
+        Task<IEnumerable<Course>> GetAllCoursesAsync();
         Task<Course> CreateCourseAsync(Course course);
         Task<Course> UpdateCourseAsync(int courseId, Course updatedCourse);
         Task DeleteCourseAsync(int courseId);

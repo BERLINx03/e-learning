@@ -25,8 +25,7 @@ namespace ELearning.API.Controllers
         {
             try
             {
-                //var courses = await _courseService.GetAllCoursesAsync();
-                Course courses = null;
+                var courses = await _courseService.GetAllCoursesAsync();
                 return Ok(courses);
             }
             catch (Exception ex)
