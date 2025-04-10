@@ -114,7 +114,7 @@ namespace ELearning.API.Controllers
                 {
                     var rr = BaseResult<string>.Fail(["Forbidden"]);
                     return StatusCode(rr.StatusCode, rr);
-                } 
+                }
 
                 await _lessonService.DeleteLessonAsync(id);
                 var result = BaseResult<string>.Success(message: "Lesson deleted successfully");

@@ -36,7 +36,7 @@ namespace ELearning.API.Controllers
 
                 var registeredUser = await _userService.RegisterUserAsync(user, registrationDto.Password);
                 //var token = await _userService.GenerateJwtTokenAsync(registeredUser);
-                
+
                 var result = BaseResult<string>.Success(message: "Instructor registered successfully");
                 return StatusCode(result.StatusCode, result);
             }
@@ -211,7 +211,7 @@ namespace ELearning.API.Controllers
             try
             {
                 await _userService.UpdateUserStatusAsync(userId, isActive);
-                var result = BaseResult<string>.Success(message:"User status updated successfully");
+                var result = BaseResult<string>.Success(message: "User status updated successfully");
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
