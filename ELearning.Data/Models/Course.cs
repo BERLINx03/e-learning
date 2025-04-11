@@ -13,7 +13,7 @@ namespace ELearning.Data.Models
         public long Price { get; set; }
         public string? ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public int InstructorId { get; set; }
         public User? Instructor { get; set; }
