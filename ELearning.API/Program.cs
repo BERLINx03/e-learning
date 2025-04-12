@@ -11,7 +11,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-///////// ******** The Backend Master passed from here ******** ///////
+///////// ******** The Backend Protagonist passed from here ******** ///////
 // Add services to the container.
 builder.Services.AddControllers();
 
