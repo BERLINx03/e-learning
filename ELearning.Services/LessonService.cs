@@ -33,6 +33,7 @@ namespace ELearning.Services
 
             lesson.CreatedAt = DateTime.UtcNow;
             await _lessonRepository.AddAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
             return lesson;
         }
 
@@ -47,6 +48,7 @@ namespace ELearning.Services
             existingLesson.VideoUrl = updatedLesson.VideoUrl;
             existingLesson.DocumentUrl = updatedLesson.DocumentUrl;
             existingLesson.Order = updatedLesson.Order;
+            await _lessonRepository.SaveChangesAsync();
 
             return await _lessonRepository.UpdateAsync(existingLesson);
         }
@@ -58,6 +60,7 @@ namespace ELearning.Services
                 throw new ArgumentException("Lesson not found");
 
             await _lessonRepository.DeleteAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
         }
 
         public async Task<Lesson> GetLessonByIdAsync(int lessonId)
@@ -104,6 +107,7 @@ namespace ELearning.Services
                     await _lessonRepository.UpdateAsync(lesson);
                 }
             }
+            await _lessonRepository.SaveChangesAsync();
         }
 
         public async Task<bool> UpdateLessonContentAsync(int lessonId, string content)
@@ -114,6 +118,7 @@ namespace ELearning.Services
 
             lesson.Content = content;
             await _lessonRepository.UpdateAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
             return true;
         }
 
@@ -126,6 +131,7 @@ namespace ELearning.Services
             lesson.VideoUrl = videoUrl;
             lesson.DocumentUrl = documentUrl;
             await _lessonRepository.UpdateAsync(lesson);
+            await _lessonRepository.SaveChangesAsync();
             return true;
         }
 
