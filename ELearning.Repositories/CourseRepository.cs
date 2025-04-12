@@ -23,6 +23,13 @@ namespace ELearning.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Course> GetCourseByIdWithInstructorAsync(int courseId)
+        {
+            return await _context.Set<Course>()
+                .Include(c => c.Instructor)
+                .FirstOrDefaultAsync(c => c.Id == courseId);
+        }
+
         public async Task<IEnumerable<Course>> GetEnrolledCoursesAsync(int studentId)
         {
             return await _context.Set<Course>()

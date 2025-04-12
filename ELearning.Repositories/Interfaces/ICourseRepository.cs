@@ -7,6 +7,7 @@ namespace ELearning.Repositories.Interfaces
     public interface ICourseRepository : IRepository<Course>
     {
         Task<IEnumerable<Course>> GetCoursesByInstructorAsync(int instructorId);
+        Task<Course> GetCourseByIdWithInstructorAsync(int courseId);
         Task<IEnumerable<Course>> GetEnrolledCoursesAsync(int studentId);
         Task<int> GetEnrolledStudentsCountAsync(int courseId);
         Task<IEnumerable<Course>> GetPublishedCoursesAsync();

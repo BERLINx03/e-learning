@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ELearning.Data.Models
 {
@@ -10,6 +11,11 @@ namespace ELearning.Data.Models
         public string? Description { get; set; }
         public string? Category { get; set; }
         public string? Level { get; set; }
+        public string? Language { get; set; }
+        // [Range(0,5)] public double Rating { get; set; } = 0.0;
+        public string?[] WhatYouWillLearn { get; set; } = Array.Empty<string?>();
+        public string?[] ThisCourseInclude { get; set; } = Array.Empty<string?>();
+        public float Duration { get; set; } = 0f;
         public long Price { get; set; }
         public string? ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }

@@ -7,6 +7,7 @@ using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
 using System.Security.Claims;
 using ELearning.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace ELearning.API.Controllers
 {
@@ -74,7 +75,11 @@ namespace ELearning.API.Controllers
                     Category = courseDto.Category,
                     Level = courseDto.Level,
                     Price = courseDto.Price,
-                    ThumbnailUrl = courseDto.ThumbnailUrl
+                    ThumbnailUrl = courseDto.ThumbnailUrl,
+                    Language = courseDto.Language,
+                    WhatYouWillLearn = courseDto.WhatYouWillLearn,
+                    ThisCourseInclude = courseDto.ThisCourseInclude,
+                    Duration = courseDto.Duration,
                 };
 
                 var createdCourse = await _courseService.CreateCourseAsync(course);
@@ -111,6 +116,12 @@ namespace ELearning.API.Controllers
                 course.Price = courseDto.Price;
                 course.ThumbnailUrl = courseDto.ThumbnailUrl;
                 course.IsPublished = courseDto.IsPublished;
+                course.Language = courseDto.Language;
+                course.UpdatedAt = DateTime.UtcNow;
+                course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
+                course.ThisCourseInclude = courseDto.ThisCourseInclude;
+                course.Duration = courseDto.Duration;
+                
 
                 var updatedCourse = await _courseService.UpdateCourseAsync(id, course);
                 var result = BaseResult<Course>.Success(updatedCourse);
@@ -241,6 +252,10 @@ namespace ELearning.API.Controllers
         public string Level { get; set; }
         public long Price { get; set; }
         public string ThumbnailUrl { get; set; }
+        public string[] WhatYouWillLearn { get; set; }
+        public string[] ThisCourseInclude { get; set; }
+        public float Duration { get; set; }
+        public string Language { get; set; }
     }
 
     public class CourseUpdateDto
@@ -252,5 +267,9 @@ namespace ELearning.API.Controllers
         public long Price { get; set; }
         public string ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }
+        public string[] WhatYouWillLearn { get; set; }
+        public string[] ThisCourseInclude { get; set; }
+        public float Duration { get; set; }
+        public string Language { get; set; }
     }
 }

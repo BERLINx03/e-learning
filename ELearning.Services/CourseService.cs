@@ -44,7 +44,10 @@ namespace ELearning.Services
             existingCourse.Price = course.Price;
             existingCourse.ThumbnailUrl = course.ThumbnailUrl;
             existingCourse.IsPublished = course.IsPublished;
-
+            existingCourse.WhatYouWillLearn = course.WhatYouWillLearn;
+            existingCourse.Language = course.Language;
+            existingCourse.ThisCourseInclude = course.ThisCourseInclude;
+            existingCourse.Duration = course.Duration;
             await _courseRepository.SaveChangesAsync();
             return existingCourse;
         }
@@ -61,7 +64,7 @@ namespace ELearning.Services
 
         public async Task<Course> GetCourseByIdAsync(int id)
         {
-            return await _courseRepository.GetByIdAsync(id);
+            return await _courseRepository.GetCourseByIdWithInstructorAsync(id);
         }
 
         public async Task<IEnumerable<Course>> GetCoursesByInstructorAsync(int instructorId)
