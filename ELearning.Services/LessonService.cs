@@ -6,6 +6,7 @@ using ELearning.Data.Models;
 using ELearning.Repositories.Interfaces;
 using ELearning.Services.Dtos;
 using ELearning.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.Services
 {
@@ -14,15 +15,18 @@ namespace ELearning.Services
         private readonly ILessonRepository _lessonRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ICloudinaryService _cloudinaryService;
 
         public LessonService(
             ILessonRepository lessonRepository,
             ICourseRepository courseRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ICloudinaryService cloudinaryService)
         {
             _lessonRepository = lessonRepository;
             _courseRepository = courseRepository;
             _userRepository = userRepository;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<Lesson> CreateLessonAsync(Lesson lesson)
@@ -213,6 +217,29 @@ namespace ELearning.Services
             }
 
             return (decimal)completedLessons / lessons.Count() * 100;
+        }
+
+        public async Task<string> UploadLessonVideoAsync(int courseId, int lessonId, int instructorId, IFormFile videoFile)
+        {   
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null) 
+                throw new Exception("Course not found");
+
+            if (course.InstructorId != instructorId) 
+                throw new Exception("Only the course instructor can send messages");
+
+            var lesson = await _lessonRepository.GetByIdAsync(lessonId);
+            if (lesson == null) 
+                throw new Exception("Lesson not found");
+
+            var result = await _cloudinaryService.UploadVideoAsync(videoFile);
+            if(!result.IsSuccess)
+            {
+                throw new Exception("Video upload failed");
+            }
+            lesson.VideoUrl = result.Data;
+            await _lessonRepository.SaveChangesAsync();
+            return result.Data;
         }
     }
 }

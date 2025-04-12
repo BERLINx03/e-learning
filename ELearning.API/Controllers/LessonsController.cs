@@ -61,6 +61,27 @@ namespace ELearning.API.Controllers
         }
 
         [Authorize(Roles = "Instructor")]
+        [HttpPut("{lessonId}/video/course/{courseId}")]
+        public async Task<ActionResult<BaseResult<string>>> UploadLessonVideoAsync(int lessonId, int courseId, IFormFile video)
+        {
+            try
+            {
+                var instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var uploadResult = await _lessonService.UploadLessonVideoAsync(courseId, lessonId, instructorId, video);
+                var result = BaseResult<string>.Success(uploadResult);
+                return StatusCode(result.StatusCode, result);
+
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+
+            }
+        }
+
+
+        [Authorize(Roles = "Instructor")]
         [HttpPut("{id}")]
         public async Task<ActionResult<BaseResult<LessonResponseDto>>> UpdateLesson(int id, [FromBody] LessonUpdateDto lessonDto)
         {

@@ -2,12 +2,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
 using ELearning.Services.Dtos;
+using Microsoft.AspNetCore.Http;
 namespace ELearning.Services.Interfaces
 {
     public interface ILessonService
     {
         Task<Lesson> CreateLessonAsync(Lesson lesson);
         Task<Lesson> UpdateLessonAsync(int lessonId, Lesson updatedLesson);
+
+        Task<string> UploadLessonVideoAsync(int courseId,int lessonId, int instructorId, IFormFile videoFile);
         Task DeleteLessonAsync(int lessonId);
         Task<Lesson> GetLessonByIdAsync(int id);
         Task<IEnumerable<Lesson>> GetLessonsByCourseAsync(int courseId);
