@@ -75,7 +75,6 @@ namespace ELearning.API.Controllers
                     Category = courseDto.Category,
                     Level = courseDto.Level,
                     Price = courseDto.Price,
-                    ThumbnailUrl = courseDto.ThumbnailUrl,
                     Language = courseDto.Language,
                     WhatYouWillLearn = courseDto.WhatYouWillLearn,
                     ThisCourseInclude = courseDto.ThisCourseInclude,
@@ -114,7 +113,6 @@ namespace ELearning.API.Controllers
                 course.Category = courseDto.Category;
                 course.Level = courseDto.Level;
                 course.Price = courseDto.Price;
-                course.ThumbnailUrl = courseDto.ThumbnailUrl;
                 course.IsPublished = courseDto.IsPublished;
                 course.Language = courseDto.Language;
                 course.UpdatedAt = DateTime.UtcNow;
@@ -131,6 +129,26 @@ namespace ELearning.API.Controllers
             catch (Exception ex)
             {
                 var result = BaseResult<Course>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+
+            }
+        }
+
+        [Authorize(Roles = "Instructor")]
+        [HttpPut("{id}/thumbnail")]
+        public async Task<ActionResult<BaseResult<string>>> UploadCourseThumbnailAsync(int id, IFormFile thumbnail)
+        {
+            try
+            {
+                var instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var uploadResult = await _courseService.UploadCourseThumbnailAsync(id, instructorId, thumbnail);
+                var result = BaseResult<string>.Success(uploadResult);
+                return StatusCode(result.StatusCode, result);
+
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<string>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
 
             }
@@ -251,7 +269,6 @@ namespace ELearning.API.Controllers
         public string Category { get; set; }
         public string Level { get; set; }
         public long Price { get; set; }
-        public string ThumbnailUrl { get; set; }
         public string[] WhatYouWillLearn { get; set; }
         public string[] ThisCourseInclude { get; set; }
         public float Duration { get; set; }
@@ -265,7 +282,6 @@ namespace ELearning.API.Controllers
         public string Category { get; set; }
         public string Level { get; set; }
         public long Price { get; set; }
-        public string ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }
         public string[] WhatYouWillLearn { get; set; }
         public string[] ThisCourseInclude { get; set; }

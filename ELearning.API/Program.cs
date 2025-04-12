@@ -77,6 +77,8 @@ builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
 
 // Configure CORS
 builder.Services.AddCors(options =>

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.Services.Interfaces
 {
@@ -9,6 +10,7 @@ namespace ELearning.Services.Interfaces
         Task<IEnumerable<Course>> GetAllCoursesAsync();
         Task<Course> CreateCourseAsync(Course course);
         Task<Course> UpdateCourseAsync(int courseId, Course updatedCourse);
+        Task<string> UploadCourseThumbnailAsync(int courseId, int instructorId, IFormFile thumbnailFile);
         Task DeleteCourseAsync(int courseId);
         Task<Course> GetCourseByIdAsync(int id);
         Task<IEnumerable<Course>> GetCoursesByInstructorAsync(int instructorId);

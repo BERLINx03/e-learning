@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
+using ELearning.Repositories;
 using ELearning.Repositories.Interfaces;
 using ELearning.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.Services
 {
@@ -13,10 +15,16 @@ namespace ELearning.Services
         private readonly ICourseRepository _courseRepository;
         private readonly IUserRepository _userRepository;
 
-        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository)
+        private readonly ICloudinaryService _cloudinaryService;
+
+        public CourseService(
+            ICourseRepository courseRepository,
+            IUserRepository userRepository,
+            ICloudinaryService cloudinaryService)
         {
             _courseRepository = courseRepository;
             _userRepository = userRepository;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<Course> CreateCourseAsync(Course course)
@@ -146,6 +154,24 @@ namespace ELearning.Services
             return await _courseRepository.SearchCoursesAsync(searchTerm);
         }
 
+        public async Task<string> UploadCourseThumbnailAsync(int courseId, int instructorId, IFormFile thumbnailFile)
+        {   
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null) 
+                throw new Exception("Course not found");
+
+            if (course.InstructorId != instructorId) 
+                throw new Exception("Only the course instructor can send messages");
+            
+            var result = await _cloudinaryService.UploadImageAsync(thumbnailFile);
+            if(!result.IsSuccess)
+            {
+                throw new Exception("Image upload failed");
+            }
+            course.ThumbnailUrl = result.Data;
+            await _courseRepository.SaveChangesAsync();
+            return result.Data;
+        }
         public async Task SendCourseMessageAsync(int courseId, int instructorId, string message)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
