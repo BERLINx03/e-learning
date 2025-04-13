@@ -16,7 +16,8 @@ namespace ELearning.Data.Models
         public string?[] WhatYouWillLearn { get; set; } = Array.Empty<string?>();
         public string?[] ThisCourseInclude { get; set; } = Array.Empty<string?>();
         public float Duration { get; set; } = 0f;
-        public long Price { get; set; }
+        public long Price { get; set; } = 0;
+        // All courses are now free by default
         public string? ThumbnailUrl { get; set; }
         public bool IsPublished { get; set; }
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;

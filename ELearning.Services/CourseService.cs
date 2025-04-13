@@ -39,9 +39,9 @@ namespace ELearning.Services
             return course;
         }
 
-        public async Task<Course> UpdateCourseAsync(int id, Course course)
+        public async Task<Course> UpdateCourseAsync(int courseId, Course course)
         {
-            var existingCourse = await _courseRepository.GetByIdAsync(id);
+            var existingCourse = await _courseRepository.GetByIdAsync(courseId);
             if (existingCourse == null)
                 throw new Exception("Course not found");
 
@@ -49,7 +49,7 @@ namespace ELearning.Services
             existingCourse.Description = course.Description;
             existingCourse.Category = course.Category;
             existingCourse.Level = course.Level;
-            existingCourse.Price = course.Price;
+            existingCourse.Price = 0; // Always free
             existingCourse.ThumbnailUrl = course.ThumbnailUrl;
             existingCourse.IsPublished = course.IsPublished;
             existingCourse.WhatYouWillLearn = course.WhatYouWillLearn;
@@ -155,16 +155,16 @@ namespace ELearning.Services
         }
 
         public async Task<string> UploadCourseThumbnailAsync(int courseId, int instructorId, IFormFile thumbnailFile)
-        {   
+        {
             var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null) 
+            if (course == null)
                 throw new Exception("Course not found");
 
-            if (course.InstructorId != instructorId) 
+            if (course.InstructorId != instructorId)
                 throw new Exception("Only the course instructor can send messages");
-            
+
             var result = await _cloudinaryService.UploadImageAsync(thumbnailFile);
-            if(!result.IsSuccess)
+            if (!result.IsSuccess)
             {
                 throw new Exception("Image upload failed");
             }

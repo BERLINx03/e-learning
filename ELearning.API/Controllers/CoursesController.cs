@@ -74,7 +74,7 @@ namespace ELearning.API.Controllers
                     InstructorId = instructorId,
                     Category = courseDto.Category,
                     Level = courseDto.Level,
-                    Price = courseDto.Price,
+                    Price = 0,
                     Language = courseDto.Language,
                     WhatYouWillLearn = courseDto.WhatYouWillLearn,
                     ThisCourseInclude = courseDto.ThisCourseInclude,
@@ -112,14 +112,14 @@ namespace ELearning.API.Controllers
                 course.Description = courseDto.Description;
                 course.Category = courseDto.Category;
                 course.Level = courseDto.Level;
-                course.Price = courseDto.Price;
+                course.Price = 0;
                 course.IsPublished = courseDto.IsPublished;
                 course.Language = courseDto.Language;
                 course.UpdatedAt = DateTime.UtcNow;
                 course.WhatYouWillLearn = courseDto.WhatYouWillLearn;
                 course.ThisCourseInclude = courseDto.ThisCourseInclude;
                 course.Duration = courseDto.Duration;
-                
+
 
                 var updatedCourse = await _courseService.UpdateCourseAsync(id, course);
                 var result = BaseResult<Course>.Success(updatedCourse);
@@ -268,7 +268,7 @@ namespace ELearning.API.Controllers
         public string Description { get; set; }
         public string Category { get; set; }
         public string Level { get; set; }
-        public long Price { get; set; }
+        public long Price { get; set; } = 0;
         public string[] WhatYouWillLearn { get; set; }
         public string[] ThisCourseInclude { get; set; }
         public float Duration { get; set; }
@@ -281,7 +281,7 @@ namespace ELearning.API.Controllers
         public string Description { get; set; }
         public string Category { get; set; }
         public string Level { get; set; }
-        public long Price { get; set; }
+        public long Price { get; set; } = 0;
         public bool IsPublished { get; set; }
         public string[] WhatYouWillLearn { get; set; }
         public string[] ThisCourseInclude { get; set; }
