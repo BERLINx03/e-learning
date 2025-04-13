@@ -222,6 +222,24 @@ namespace ELearning.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Student")]
+        [HttpGet("{id}/enrollment-status")]
+        public async Task<ActionResult<BaseResult<bool>>> CheckEnrollmentStatus(int id)
+        {
+            try
+            {
+                var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var isEnrolled = await _courseService.IsStudentEnrolledAsync(id, studentId);
+                var result = BaseResult<bool>.Success(isEnrolled);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<bool>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
         [Authorize]
         [HttpGet("my-courses")]
         public async Task<ActionResult<BaseResult<IEnumerable<CourseResponseDto>>>> GetMyCourses()
