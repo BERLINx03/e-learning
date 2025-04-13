@@ -9,6 +9,7 @@ using System.Security.Claims;
 using ELearning.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using ELearning.Services.Dtos;
 
 namespace ELearning.API.Controllers
 {
@@ -223,7 +224,7 @@ namespace ELearning.API.Controllers
 
         [Authorize]
         [HttpGet("my-courses")]
-        public async Task<ActionResult<BaseResult<IEnumerable<Course>>>> GetMyCourses()
+        public async Task<ActionResult<BaseResult<IEnumerable<CourseResponseDto>>>> GetMyCourses()
         {
             try
             {
@@ -235,13 +236,13 @@ namespace ELearning.API.Controllers
                     courses = await _courseService.GetCoursesByInstructorAsync(userId);
                 else
                     courses = await _courseService.GetEnrolledCoursesAsync(userId);
-
-                var result = BaseResult<IEnumerable<Course>>.Success(courses);
+                var dto = courses.Select(c => MapCoursesToDto(c)).ToList();
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Success(dto);
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
@@ -301,6 +302,27 @@ namespace ELearning.API.Controllers
                 var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
+        }
+        private CourseResponseDto MapCoursesToDto(Course course)
+        {
+            return new CourseResponseDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description,
+                Category = course.Category,
+                Level = course.Level,
+                Price = course.Price,
+                Language = course.Language,
+                WhatYouWillLearn = course.WhatYouWillLearn,
+                ThumbnailUrl = course.ThumbnailUrl,
+                InstructorId = course.InstructorId,
+                ThisCourseInclude = course.ThisCourseInclude,
+                Duration = course.Duration,
+                IsPublished = course.IsPublished,
+                CreatedAt = course.CreatedAt,
+                UpdatedAt = course.UpdatedAt
+            };
         }
     }
 
