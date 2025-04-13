@@ -220,6 +220,41 @@ namespace ELearning.API.Controllers
                 return StatusCode(result.StatusCode, result);
             }
         }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<ActionResult<BaseResult<UserResponseDto>>> GetUserById(int id)
+        {
+            try
+            {
+                var user = await _userService.GetUserByIdAsync(id);
+
+                if (user == null)
+                {
+                    var notFoundResult = BaseResult<UserResponseDto>.Fail(["User not found"]);
+                    return StatusCode(notFoundResult.StatusCode, notFoundResult);
+                }
+
+                var dto = new UserResponseDto
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    Bio = user.Bio
+                };
+
+                var result = BaseResult<UserResponseDto>.Success(dto);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<UserResponseDto>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
     }
 
     public class LoginResponseDto
