@@ -61,5 +61,47 @@ namespace ELearning.Repositories
                 await SaveChangesAsync();
             }
         }
+
+        public async Task BanUserAsync(int userId, bool isBanned)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsBanned = isBanned;
+                // If unbanning, also clear any timeout
+                if (!isBanned && user.TimeoutUntil.HasValue)
+                {
+                    user.TimeoutUntil = null;
+                }
+                Update(user);
+                await SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> IsUserBannedAsync(int userId)
+        {
+            var user = await GetByIdAsync(userId);
+            return user?.IsBanned ?? false;
+        }
+
+        public async Task<bool> IsUserTimedOutAsync(int userId)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null || !user.TimeoutUntil.HasValue)
+            {
+                return false;
+            }
+
+            // If timeout period has passed, clear the timeout and return false
+            if (user.TimeoutUntil.Value < DateTime.UtcNow)
+            {
+                user.TimeoutUntil = null;
+                Update(user);
+                await SaveChangesAsync();
+                return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -16,6 +16,7 @@ namespace ELearning.Repositories.Interfaces
         Task<decimal> GetCourseCompletionRateAsync(int courseId);
         Task<Enrollment> GetEnrollmentAsync(int courseId, int studentId);
         Task<IEnumerable<Enrollment>> GetEnrollmentsByCourseAsync(int courseId);
+        Task<IEnumerable<User>> GetEnrolledStudentsByCourseAsync(int courseId);
         Task AddEnrollmentAsync(Enrollment enrollment);
         void RemoveEnrollment(Enrollment enrollment);
         Task AddCourseMessageAsync(CourseMessage message);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
@@ -15,6 +16,7 @@ namespace ELearning.Services.Interfaces
         Task ChangePasswordAsync(int userId, string currentPassword, string newPassword);
         Task<bool> IsUserActiveAsync(int userId);
         Task SetUserTimeoutAsync(int userId, DateTime? timeoutUntil);
+        Task BanUserAsync(int userId, bool isBanned);
         Task GeneratePasswordResetTokenAsync(string email);
         Task ResetPasswordAsync(string token, string newPassword);
         Task<string> GenerateJwtTokenAsync(User user);

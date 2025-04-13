@@ -8,6 +8,7 @@ using ELearning.Services.Interfaces;
 using System.Security.Claims;
 using ELearning.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace ELearning.API.Controllers
 {
@@ -241,6 +242,47 @@ namespace ELearning.API.Controllers
             catch (Exception ex)
             {
                 var result = BaseResult<IEnumerable<Course>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
+        [Authorize(Roles = "Instructor,Admin")]
+        [HttpGet("{id}/students")]
+        public async Task<ActionResult<BaseResult<IEnumerable<UserResponseDto>>>> GetEnrolledStudents(int id)
+        {
+            try
+            {
+                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                // Check if user is the instructor of this course or an admin
+                var course = await _courseService.GetCourseByIdAsync(id);
+                if (course == null)
+                {
+                    var notFoundResult = BaseResult<IEnumerable<UserResponseDto>>.Fail(["Course not found"]);
+                    return StatusCode(notFoundResult.StatusCode, notFoundResult);
+                }
+
+                var students = await _courseService.GetEnrolledStudentsByCourseAsync(id);
+
+                // Map to DTO to avoid sending sensitive information
+                var studentDtos = students.Select(s => new UserResponseDto
+                {
+                    Id = s.Id,
+                    Username = s.Username,
+                    Email = s.Email,
+                    FirstName = s.FirstName,
+                    LastName = s.LastName,
+                    ProfilePictureUrl = s.ProfilePictureUrl,
+                    Bio = s.Bio
+                });
+
+                var result = BaseResult<IEnumerable<UserResponseDto>>.Success(studentDtos);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<IEnumerable<UserResponseDto>>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }

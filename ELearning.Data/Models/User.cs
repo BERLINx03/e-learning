@@ -16,6 +16,7 @@ namespace ELearning.Data.Models
         public bool IsActive { get; set; }
         public string? Role { get; set; } // "Instructor", "Student"
         public DateTime? TimeoutUntil { get; set; } // For admin timeout functionality
+        public bool IsBanned { get; set; } = false; // User ban status
         public string? ProfilePictureUrl { get; set; }
         public string? Bio { get; set; }
     }

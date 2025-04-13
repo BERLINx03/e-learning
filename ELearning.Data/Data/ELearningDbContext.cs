@@ -18,6 +18,7 @@ namespace ELearning.Data.Data
         public DbSet<Certificate> Certificates { get; set; }
         public DbSet<LessonProgress> LessonProgress { get; set; }
         public DbSet<CourseMessage> CourseMessages { get; set; }
+        public DbSet<UserReport> UserReports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +47,19 @@ namespace ELearning.Data.Data
                 .HasOne(e => e.Course)
                 .WithMany(c => c.Enrollments)
                 .HasForeignKey(e => e.CourseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure UserReport relationships
+            modelBuilder.Entity<UserReport>()
+                .HasOne(ur => ur.ReportedUser)
+                .WithMany()
+                .HasForeignKey(ur => ur.ReportedUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserReport>()
+                .HasOne(ur => ur.ReporterUser)
+                .WithMany()
+                .HasForeignKey(ur => ur.ReporterUserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Add any additional configurations here

@@ -15,6 +15,7 @@ namespace ELearning.Services.Interfaces
         Task<Course> GetCourseByIdAsync(int id);
         Task<IEnumerable<Course>> GetCoursesByInstructorAsync(int instructorId);
         Task<IEnumerable<Course>> GetEnrolledCoursesAsync(int studentId);
+        Task<IEnumerable<User>> GetEnrolledStudentsByCourseAsync(int courseId);
         Task EnrollStudentInCourseAsync(int courseId, int studentId);
         Task UnenrollStudentFromCourseAsync(int courseId, int studentId);
         Task<bool> IsStudentEnrolledAsync(int courseId, int studentId);

@@ -51,6 +51,12 @@ namespace ELearning.Services
             if (!user.IsActive)
                 throw new Exception("User account is inactive");
 
+            if (user.IsBanned)
+                throw new Exception("Your account has been banned. Please contact support for assistance.");
+
+            if (await _userRepository.IsUserTimedOutAsync(user.Id))
+                throw new Exception($"Your account is temporarily suspended until {user.TimeoutUntil.Value.ToString("g")}");
+
             return user;
         }
 
@@ -122,7 +128,16 @@ namespace ELearning.Services
         public async Task<bool> IsUserActiveAsync(int userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            return user?.IsActive ?? false;
+            if (user == null)
+                return false;
+
+            if (user.IsBanned)
+                return false;
+
+            if (await _userRepository.IsUserTimedOutAsync(userId))
+                return false;
+
+            return user.IsActive;
         }
 
         public async Task SetUserTimeoutAsync(int userId, DateTime? timeoutUntil)
@@ -155,6 +170,11 @@ namespace ELearning.Services
             user.IsActive = isActive;
             await _userRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async Task BanUserAsync(int userId, bool isBanned)
+        {
+            await _userRepository.BanUserAsync(userId, isBanned);
         }
     }
 }

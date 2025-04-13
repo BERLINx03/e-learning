@@ -94,6 +94,15 @@ namespace ELearning.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<User>> GetEnrolledStudentsByCourseAsync(int courseId)
+        {
+            return await _context.Set<Enrollment>()
+                .Where(e => e.CourseId == courseId)
+                .Include(e => e.Student)
+                .Select(e => e.Student)
+                .ToListAsync();
+        }
+
         public async Task AddEnrollmentAsync(Enrollment enrollment)
         {
             await _context.Set<Enrollment>().AddAsync(enrollment);

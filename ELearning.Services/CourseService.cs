@@ -85,6 +85,15 @@ namespace ELearning.Services
             return await _courseRepository.GetEnrolledCoursesAsync(studentId);
         }
 
+        public async Task<IEnumerable<User>> GetEnrolledStudentsByCourseAsync(int courseId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                throw new Exception("Course not found");
+
+            return await _courseRepository.GetEnrolledStudentsByCourseAsync(courseId);
+        }
+
         public async Task EnrollStudentInCourseAsync(int courseId, int studentId)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
