@@ -14,7 +14,7 @@ namespace ELearning.Data.Models
         public DateTime ReportedAt { get; set; } = DateTime.UtcNow;
         public bool IsReviewed { get; set; } = false;
         public DateTime? ReviewedAt { get; set; }
-        public string AdminNotes { get; set; }
+        public string AdminNotes { get; set; } = "";
         public ReportStatus Status { get; set; } = ReportStatus.Pending;
     }
 

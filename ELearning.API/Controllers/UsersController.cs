@@ -6,6 +6,7 @@ using ELearning.Data.Models;
 using ELearning.Services.Interfaces;
 using System.Security.Claims;
 using ELearning.Services;
+using ELearning.Services.Dtos;
 
 namespace ELearning.API.Controllers
 {
@@ -121,7 +122,8 @@ namespace ELearning.API.Controllers
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePictureUrl = user.ProfilePictureUrl,
-                    Bio = user.Bio
+                    Bio = user.Bio,
+                    Role = user.Role
                 };
                 var result = BaseResult<UserResponseDto>.Success(dto);
                 return StatusCode(result.StatusCode, result);
@@ -191,7 +193,8 @@ namespace ELearning.API.Controllers
                         FirstName = user.FirstName,
                         LastName = user.LastName,
                         ProfilePictureUrl = user.ProfilePictureUrl,
-                        Bio = user.Bio
+                        Bio = user.Bio,
+                        Role = user.Role
                     }
                     );
                 var result = BaseResult<IEnumerable<UserResponseDto>>.Success(dtos);
@@ -243,7 +246,8 @@ namespace ELearning.API.Controllers
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     ProfilePictureUrl = user.ProfilePictureUrl,
-                    Bio = user.Bio
+                    Bio = user.Bio,
+                    Role = user.Role
                 };
 
                 var result = BaseResult<UserResponseDto>.Success(dto);
@@ -254,6 +258,74 @@ namespace ELearning.API.Controllers
                 var result = BaseResult<UserResponseDto>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
+        }
+
+        [HttpGet("{id}/courses")]
+        [Authorize]
+        public async Task<ActionResult<BaseResult<IEnumerable<CourseResponseDto>>>> GetUserCourses(int id)
+        {
+            try
+            {
+                var user = await _userService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    var notFoundResult = BaseResult<IEnumerable<CourseResponseDto>>.Fail(["User not found"]);
+                    return StatusCode(notFoundResult.StatusCode, notFoundResult);
+                }
+
+                // Get the course service from controller context
+                var courseService = HttpContext.RequestServices.GetService(typeof(ICourseService)) as ICourseService;
+                if (courseService == null)
+                {
+                    var errorResult = BaseResult<IEnumerable<CourseResponseDto>>.Fail(["Course service not available"]);
+                    return StatusCode(errorResult.StatusCode, errorResult);
+                }
+
+                IEnumerable<Course> courses;
+                if (user.Role == "Instructor")
+                {
+                    // For instructors, return the courses they've created
+                    courses = await courseService.GetCoursesByInstructorAsync(id);
+                }
+                else
+                {
+                    // For students, return the courses they're enrolled in
+                    courses = await courseService.GetEnrolledCoursesAsync(id);
+                }
+
+                // Map to DTOs
+                var courseDtos = courses.Select(c => MapCourseToDto(c));
+
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Success(courseDtos);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
+        private CourseResponseDto MapCourseToDto(Course course)
+        {
+            return new CourseResponseDto
+            {
+                Id = course.Id,
+                Title = course.Title,
+                Description = course.Description,
+                Category = course.Category,
+                Level = course.Level,
+                Price = course.Price,
+                Language = course.Language,
+                WhatYouWillLearn = course.WhatYouWillLearn,
+                ThumbnailUrl = course.ThumbnailUrl,
+                InstructorId = course.InstructorId,
+                ThisCourseInclude = course.ThisCourseInclude,
+                Duration = course.Duration,
+                IsPublished = course.IsPublished,
+                CreatedAt = course.CreatedAt,
+                UpdatedAt = course.UpdatedAt
+            };
         }
     }
 
@@ -281,6 +353,7 @@ namespace ELearning.API.Controllers
         public string? LastName { get; set; }
         public string? ProfilePictureUrl { get; set; }
         public string? Bio { get; set; }
+        public string? Role { get; set; }
     }
 
     public class UserLoginDto
