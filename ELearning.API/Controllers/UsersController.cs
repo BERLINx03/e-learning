@@ -149,7 +149,6 @@ namespace ELearning.API.Controllers
                 user.LastName = profileDto.LastName;
                 user.Email = profileDto.Email;
                 user.Bio = profileDto.Bio;
-                user.ProfilePictureUrl = profileDto.ProfilePictureUrl;
 
                 await _userService.UpdateUserProfileAsync(userId, user);
                 return Ok(user);
@@ -387,7 +386,6 @@ namespace ELearning.API.Controllers
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Bio { get; set; }
-        public string ProfilePictureUrl { get; set; }
     }
 
     public class ChangePasswordDto
