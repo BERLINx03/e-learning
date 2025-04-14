@@ -10,6 +10,7 @@ using BCrypt.Net;
 using ELearning.Data.Models;
 using ELearning.Repositories.Interfaces;
 using ELearning.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.Services
 {
@@ -17,11 +18,16 @@ namespace ELearning.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public UserService(IUserRepository userRepository, IConfiguration configuration)
+        public UserService(
+            IUserRepository userRepository,
+            IConfiguration configuration,
+            ICloudinaryService cloudinaryService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<User> RegisterUserAsync(User user, string password)
@@ -175,6 +181,24 @@ namespace ELearning.Services
         public async Task BanUserAsync(int userId, bool isBanned)
         {
             await _userRepository.BanUserAsync(userId, isBanned);
+        }
+
+        public async Task<string> UploadProfilePictureAsync(int userId, IFormFile pictureFile)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found");
+
+            var result = await _cloudinaryService.UploadImageAsync(pictureFile);
+            if (!result.IsSuccess)
+            {
+                throw new Exception("Image upload failed: " + result.Errors[0]);
+            }
+
+            user.ProfilePictureUrl = result.Data;
+            await _userRepository.SaveChangesAsync();
+
+            return result.Data;
         }
     }
 }

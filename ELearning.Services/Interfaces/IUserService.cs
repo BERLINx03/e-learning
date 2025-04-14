@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ELearning.Data.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.Services.Interfaces
 {
@@ -21,5 +22,6 @@ namespace ELearning.Services.Interfaces
         Task ResetPasswordAsync(string token, string newPassword);
         Task<string> GenerateJwtTokenAsync(User user);
         Task<bool> UpdateUserStatusAsync(int userId, bool isActive);
+        Task<string> UploadProfilePictureAsync(int userId, IFormFile pictureFile);
     }
 }

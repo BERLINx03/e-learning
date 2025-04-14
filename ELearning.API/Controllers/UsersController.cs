@@ -7,6 +7,7 @@ using ELearning.Services.Interfaces;
 using System.Security.Claims;
 using ELearning.Services;
 using ELearning.Services.Dtos;
+using Microsoft.AspNetCore.Http;
 
 namespace ELearning.API.Controllers
 {
@@ -302,6 +303,24 @@ namespace ELearning.API.Controllers
             catch (Exception ex)
             {
                 var result = BaseResult<IEnumerable<CourseResponseDto>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
+        [Authorize]
+        [HttpPut("profile/picture")]
+        public async Task<ActionResult<BaseResult<string>>> UploadProfilePicture(IFormFile picture)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var uploadResult = await _userService.UploadProfilePictureAsync(userId, picture);
+                var result = BaseResult<string>.Success(uploadResult, "Profile picture uploaded successfully");
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<string>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
