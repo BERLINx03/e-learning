@@ -192,9 +192,29 @@ namespace ELearning.Services
             return score;
         }
 
-        public async Task<LessonProgress> GetLessonProgressAsync(int lessonId, int enrollmentId)
+        public async Task<LessonProgressDto> GetLessonProgressAsync(int lessonId, int enrollmentId)
         {
-            return await _lessonRepository.GetLessonProgressAsync(lessonId, enrollmentId);
+            var progress = await _lessonRepository.GetLessonProgressAsync(lessonId, enrollmentId);
+
+            if (progress == null)
+            {
+                return new LessonProgressDto
+                {
+                    LessonId = lessonId,
+                    EnrollmentId = enrollmentId,
+                    IsCompleted = false
+                };
+            }
+
+            return new LessonProgressDto
+            {
+                Id = progress.Id,
+                LessonId = progress.LessonId,
+                EnrollmentId = progress.EnrollmentId,
+                IsCompleted = progress.IsCompleted,
+                CompletedAt = progress.CompletedAt,
+                QuizScore = progress.QuizScore
+            };
         }
 
         public async Task<IEnumerable<QuizQuestion>> GetQuizQuestionsAsync(int lessonId)
@@ -220,20 +240,20 @@ namespace ELearning.Services
         }
 
         public async Task<string> UploadLessonVideoAsync(int courseId, int lessonId, int instructorId, IFormFile videoFile)
-        {   
+        {
             var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null) 
+            if (course == null)
                 throw new Exception("Course not found");
 
-            if (course.InstructorId != instructorId) 
+            if (course.InstructorId != instructorId)
                 throw new Exception("Only the course instructor can send messages");
 
             var lesson = await _lessonRepository.GetByIdAsync(lessonId);
-            if (lesson == null) 
+            if (lesson == null)
                 throw new Exception("Lesson not found");
 
             var result = await _cloudinaryService.UploadVideoAsync(videoFile);
-            if(!result.IsSuccess)
+            if (!result.IsSuccess)
             {
                 throw new Exception("Video upload failed");
             }
