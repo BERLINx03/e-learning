@@ -99,7 +99,6 @@ namespace ELearning.API.Controllers
 
                 lesson.Title = lessonDto.Title;
                 lesson.Description = lessonDto.Description;
-                lesson.VideoUrl = lessonDto.VideoUrl;
                 lesson.DocumentUrl = lessonDto.DocumentUrl;
                 lesson.IsQuiz = lessonDto.IsQuiz;
                 lesson.Order = lessonDto.Order;
@@ -381,7 +380,6 @@ namespace ELearning.API.Controllers
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public string VideoUrl { get; set; }
         public string DocumentUrl { get; set; }
         public bool IsQuiz { get; set; }
         public int Order { get; set; }
