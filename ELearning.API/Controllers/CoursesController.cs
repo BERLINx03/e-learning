@@ -321,6 +321,24 @@ namespace ELearning.API.Controllers
                 return StatusCode(result.StatusCode, result);
             }
         }
+
+        [HttpGet("top-enrolled")]
+        public async Task<ActionResult<BaseResult<IEnumerable<CourseResponseDto>>>> GetTopEnrolledCourses([FromQuery] int limit = 10)
+        {
+            try
+            {
+                var courses = await _courseService.GetTopEnrolledCoursesAsync(limit);
+                var courseDtos = courses.Select(c => MapCoursesToDto(c));
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Success(courseDtos);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<IEnumerable<CourseResponseDto>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
         private CourseResponseDto MapCoursesToDto(Course course)
         {
             return new CourseResponseDto

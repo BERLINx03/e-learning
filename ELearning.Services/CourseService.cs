@@ -217,5 +217,10 @@ namespace ELearning.Services
         {
             return _courseRepository.GetAllAsync();
         }
+
+        public async Task<IEnumerable<Course>> GetTopEnrolledCoursesAsync(int limit = 10)
+        {
+            return await _courseRepository.GetTopEnrolledCoursesAsync(limit);
+        }
     }
 }

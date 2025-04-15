@@ -28,6 +28,8 @@ namespace ELearning.Repositories
         {
             return await _context.Set<Course>()
                 .Include(c => c.Instructor)
+                .Include(c => c.Lessons)
+                .Include(c => c.Enrollments)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 
@@ -126,6 +128,17 @@ namespace ELearning.Repositories
                 .Where(m => m.CourseId == courseId)
                 .Include(m => m.Instructor)
                 .OrderByDescending(m => m.SentAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Course>> GetTopEnrolledCoursesAsync(int limit = 10)
+        {
+            return await _context.Set<Course>()
+                .Include(c => c.Enrollments)
+                .Include(c => c.Lessons)
+                .Include(c => c.Instructor)
+                .OrderByDescending(c => c.Enrollments.Count)
+                .Take(limit)
                 .ToListAsync();
         }
     }
