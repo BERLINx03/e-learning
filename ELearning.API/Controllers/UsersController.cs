@@ -339,10 +339,10 @@ namespace ELearning.API.Controllers
                 ThumbnailUrl = course.ThumbnailUrl,
                 InstructorId = course.InstructorId,
                 ThisCourseInclude = course.ThisCourseInclude,
-                Duration = course.Duration,
+                Duration = (int)Math.Round(course.Duration),
                 IsPublished = course.IsPublished,
-                CreatedAt = course.CreatedAt,
-                UpdatedAt = course.UpdatedAt
+                CreatedAt = course.CreatedAt.GetValueOrDefault(),
+                UpdatedAt = course.UpdatedAt.GetValueOrDefault()
             };
         }
     }
