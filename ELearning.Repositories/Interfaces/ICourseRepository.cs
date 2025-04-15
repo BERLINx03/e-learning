@@ -21,5 +21,6 @@ namespace ELearning.Repositories.Interfaces
         void RemoveEnrollment(Enrollment enrollment);
         Task AddCourseMessageAsync(CourseMessage message);
         Task<IEnumerable<CourseMessage>> GetCourseMessagesAsync(int courseId);
+        Task<IEnumerable<Course>> GetTopEnrolledCoursesAsync(int limit = 10);
     }
 }
