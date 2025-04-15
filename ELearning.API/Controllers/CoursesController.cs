@@ -339,6 +339,50 @@ namespace ELearning.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Instructor")]
+        [HttpPost("{id}/messages")]
+        public async Task<ActionResult<BaseResult<string>>> SendCourseMessage(int id, [FromBody] CourseMessageDto messageDto)
+        {
+            try
+            {
+                var instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                await _courseService.SendCourseMessageAsync(id, instructorId, messageDto.Message);
+                var result = BaseResult<string>.Success(message: "Message sent successfully");
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<string>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
+        [HttpGet("{id}/messages")]
+        public async Task<ActionResult<BaseResult<IEnumerable<CourseMessageResponseDto>>>> GetCourseMessages(int id)
+        {
+            try
+            {
+                var messages = await _courseService.GetCourseMessagesAsync(id);
+                var messageDtos = messages.Select(m => new CourseMessageResponseDto
+                {
+                    Id = m.Id,
+                    Message = m.Message,
+                    SentAt = m.SentAt.GetValueOrDefault(),
+                    InstructorId = m.InstructorId,
+                    InstructorName = m.Instructor.FirstName + " " + m.Instructor.LastName,
+                    InstructorProfilePicture = m.Instructor.ProfilePictureUrl
+                });
+
+                var result = BaseResult<IEnumerable<CourseMessageResponseDto>>.Success(messageDtos);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<IEnumerable<CourseMessageResponseDto>>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
         private CourseResponseDto MapCoursesToDto(Course course)
         {
             return new CourseResponseDto
@@ -410,5 +454,20 @@ namespace ELearning.API.Controllers
         public DateTime UpdatedAt { get; set; }
         public int StudentCount { get; set; }
         public int LessonCount { get; set; }
+    }
+
+    public class CourseMessageDto
+    {
+        public string Message { get; set; }
+    }
+
+    public class CourseMessageResponseDto
+    {
+        public int Id { get; set; }
+        public string Message { get; set; }
+        public DateTime SentAt { get; set; }
+        public int InstructorId { get; set; }
+        public string InstructorName { get; set; }
+        public string InstructorProfilePicture { get; set; }
     }
 }
