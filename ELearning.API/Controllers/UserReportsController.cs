@@ -181,13 +181,13 @@ namespace ELearning.API.Controllers
                 DateTime? timeoutUntil = null;
                 if (timeoutDto.TimeoutHours > 0)
                 {
-                    timeoutUntil = DateTime.UtcNow.AddHours(timeoutDto.TimeoutHours);
+                    timeoutUntil = DateTime.UtcNow.AddHours(timeoutDto.TimeoutHours + 2);
                 }
 
                 await _userService.SetUserTimeoutAsync(userId, timeoutUntil);
 
                 var message = timeoutUntil.HasValue
-                    ? $"User has been timed out until {timeoutUntil.Value.ToString("g")}"
+                    ? $"User has been timed out until {timeoutUntil.Value.ToString("g")} (UTC+2)"
                     : "User timeout has been removed";
 
                 var result = BaseResult<string>.Success(message: message);
