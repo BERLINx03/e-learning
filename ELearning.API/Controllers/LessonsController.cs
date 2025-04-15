@@ -99,7 +99,6 @@ namespace ELearning.API.Controllers
 
                 lesson.Title = lessonDto.Title;
                 lesson.Description = lessonDto.Description;
-                lesson.VideoUrl = lessonDto.VideoUrl;
                 lesson.DocumentUrl = lessonDto.DocumentUrl;
                 lesson.IsQuiz = lessonDto.IsQuiz;
                 lesson.Order = lessonDto.Order;
@@ -210,7 +209,15 @@ namespace ELearning.API.Controllers
                     return StatusCode(rr.StatusCode, rr);
                 }
 
-                await _lessonService.MarkLessonAsCompletedAsync(id, studentId);
+                // Get the enrollment ID for this student and course
+                var enrollment = await _courseService.GetEnrollmentAsync(course.Id, studentId);
+                if (enrollment == null)
+                {
+                    var rr = BaseResult<string>.Fail(["Enrollment not found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
+
+                await _lessonService.MarkLessonAsCompletedAsync(id, enrollment.Id);
                 var result = BaseResult<string>.Success(message: "Lesson marked as completed");
                 return StatusCode(result.StatusCode, result);
             }
@@ -262,7 +269,7 @@ namespace ELearning.API.Controllers
 
         [Authorize]
         [HttpGet("{id}/progress")]
-        public async Task<ActionResult<BaseResult<LessonProgress>>> GetLessonProgress(int id)
+        public async Task<ActionResult<BaseResult<LessonProgressDto>>> GetLessonProgress(int id)
         {
             try
             {
@@ -271,24 +278,32 @@ namespace ELearning.API.Controllers
 
                 if (lesson == null)
                 {
-                    var rr = BaseResult<LessonProgress>.Fail(["Lesson Not Found"]);
+                    var rr = BaseResult<LessonProgressDto>.Fail(["Lesson Not Found"]);
                     return StatusCode(rr.StatusCode, rr);
                 }
 
                 var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
                 if (!await _courseService.IsStudentEnrolledAsync(course.Id, userId))
                 {
-                    var rr = BaseResult<LessonProgress>.Fail(["Forbidden"]);
+                    var rr = BaseResult<LessonProgressDto>.Fail(["Forbidden"]);
                     return StatusCode(rr.StatusCode, rr);
                 }
 
-                var progress = await _lessonService.GetLessonProgressAsync(id, userId);
-                var result = BaseResult<LessonProgress>.Success(progress);
+                // Get the enrollment ID for this student and course
+                var enrollment = await _courseService.GetEnrollmentAsync(course.Id, userId);
+                if (enrollment == null)
+                {
+                    var rr = BaseResult<LessonProgressDto>.Fail(["Enrollment not found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
+
+                var progress = await _lessonService.GetLessonProgressAsync(id, enrollment.Id);
+                var result = BaseResult<LessonProgressDto>.Success(progress);
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                var result = BaseResult<LessonProgress>.Fail([ex.Message]);
+                var result = BaseResult<LessonProgressDto>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
@@ -314,7 +329,15 @@ namespace ELearning.API.Controllers
                     return StatusCode(rr.StatusCode, rr);
                 }
 
-                var progress = await _lessonService.GetCourseProgressAsync(courseId, userId);
+                // Get the enrollment ID for this student and course
+                var enrollment = await _courseService.GetEnrollmentAsync(courseId, userId);
+                if (enrollment == null)
+                {
+                    var rr = BaseResult<decimal>.Fail(["Enrollment not found"]);
+                    return StatusCode(rr.StatusCode, rr);
+                }
+
+                var progress = await _lessonService.GetCourseProgressAsync(courseId, enrollment.Id);
 
                 var result = BaseResult<decimal>.Success(progress);
                 return StatusCode(result.StatusCode, result);
@@ -325,20 +348,21 @@ namespace ELearning.API.Controllers
                 return StatusCode(result.StatusCode, result);
             }
         }
-        
+
         private LessonResponseDto MapLessonToDto(Lesson lesson)
-    {
-        return new LessonResponseDto{
-            Id = lesson.Id,
-            Title = lesson.Title,
-            Content = lesson.Content,
-            Description = lesson.Description,
-            CourseId = lesson.CourseId,
-            Order = lesson.Order,
-            VideoUrl = lesson.VideoUrl,
-            DocumentUrl = lesson.DocumentUrl,
-        };
-    }
+        {
+            return new LessonResponseDto
+            {
+                Id = lesson.Id,
+                Title = lesson.Title,
+                Content = lesson.Content,
+                Description = lesson.Description,
+                CourseId = lesson.CourseId,
+                Order = lesson.Order,
+                VideoUrl = lesson.VideoUrl,
+                DocumentUrl = lesson.DocumentUrl,
+            };
+        }
     }
 
     public class LessonCreateDto
@@ -356,7 +380,6 @@ namespace ELearning.API.Controllers
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public string VideoUrl { get; set; }
         public string DocumentUrl { get; set; }
         public bool IsQuiz { get; set; }
         public int Order { get; set; }

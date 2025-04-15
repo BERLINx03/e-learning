@@ -20,6 +20,7 @@ namespace ELearning.Repositories
             return await _context.Set<Course>()
                 .Where(c => c.InstructorId == instructorId)
                 .Include(c => c.Lessons)
+                .Include(c => c.Enrollments)
                 .ToListAsync();
         }
 
@@ -35,6 +36,7 @@ namespace ELearning.Repositories
             return await _context.Set<Course>()
                 .Where(c => c.Enrollments.Any(e => e.StudentId == studentId))
                 .Include(c => c.Lessons)
+                .Include(c => c.Enrollments)
                 .ToListAsync();
         }
 

@@ -24,5 +24,6 @@ namespace ELearning.Services.Interfaces
         Task<IEnumerable<Course>> SearchCoursesAsync(string searchTerm);
         Task SendCourseMessageAsync(int courseId, int instructorId, string message);
         Task<IEnumerable<CourseMessage>> GetCourseMessagesAsync(int courseId);
+        Task<Enrollment> GetEnrollmentAsync(int courseId, int studentId);
     }
 }

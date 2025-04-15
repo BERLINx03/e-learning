@@ -326,20 +326,22 @@ namespace ELearning.API.Controllers
             return new CourseResponseDto
             {
                 Id = course.Id,
-                Title = course.Title,
-                Description = course.Description,
-                Category = course.Category,
-                Level = course.Level,
+                Title = course.Title ?? string.Empty,
+                Description = course.Description ?? string.Empty,
+                Category = course.Category ?? string.Empty,
+                Level = course.Level ?? string.Empty,
                 Price = course.Price,
-                Language = course.Language,
-                WhatYouWillLearn = course.WhatYouWillLearn,
-                ThumbnailUrl = course.ThumbnailUrl,
+                Language = course.Language ?? string.Empty,
+                WhatYouWillLearn = course.WhatYouWillLearn ?? Array.Empty<string>(),
+                ThumbnailUrl = course.ThumbnailUrl ?? string.Empty,
                 InstructorId = course.InstructorId,
-                ThisCourseInclude = course.ThisCourseInclude,
-                Duration = course.Duration,
+                ThisCourseInclude = course.ThisCourseInclude ?? Array.Empty<string>(),
+                Duration = (int)Math.Round(course.Duration),
                 IsPublished = course.IsPublished,
-                CreatedAt = course.CreatedAt,
-                UpdatedAt = course.UpdatedAt
+                CreatedAt = course.CreatedAt ?? DateTime.UtcNow,
+                UpdatedAt = course.UpdatedAt ?? DateTime.UtcNow,
+                StudentCount = course.Enrollments?.Count ?? 0,
+                LessonCount = course.Lessons?.Count ?? 0
             };
         }
     }
@@ -369,5 +371,26 @@ namespace ELearning.API.Controllers
         public string[] ThisCourseInclude { get; set; }
         public float Duration { get; set; }
         public string Language { get; set; }
+    }
+
+    public class CourseResponseDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Category { get; set; }
+        public string Level { get; set; }
+        public decimal Price { get; set; }
+        public string Language { get; set; }
+        public string[] WhatYouWillLearn { get; set; }
+        public string ThumbnailUrl { get; set; }
+        public int InstructorId { get; set; }
+        public string[] ThisCourseInclude { get; set; }
+        public int Duration { get; set; }
+        public bool IsPublished { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public int StudentCount { get; set; }
+        public int LessonCount { get; set; }
     }
 }

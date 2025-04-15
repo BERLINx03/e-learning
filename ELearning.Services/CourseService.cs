@@ -181,6 +181,12 @@ namespace ELearning.Services
             await _courseRepository.SaveChangesAsync();
             return result.Data;
         }
+
+        public async Task<Enrollment> GetEnrollmentAsync(int courseId, int studentId)
+        {
+            return await _courseRepository.GetEnrollmentAsync(courseId, studentId);
+        }
+
         public async Task SendCourseMessageAsync(int courseId, int instructorId, string message)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
