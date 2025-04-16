@@ -324,6 +324,73 @@ namespace ELearning.API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpGet("status")]
+        public async Task<ActionResult<BaseResult<UserStatusDto>>> GetUserStatus()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var user = await _userService.GetUserByIdAsync(userId);
+
+                if (user == null)
+                {
+                    var notFoundResult = BaseResult<UserStatusDto>.Fail(["User not found"]);
+                    return StatusCode(notFoundResult.StatusCode, notFoundResult);
+                }
+
+                var isActive = await _userService.IsUserActiveAsync(userId);
+                var statusDto = new UserStatusDto
+                {
+                    IsActive = user.IsActive,
+                    IsBanned = user.IsBanned,
+                    TimeoutUntil = user.TimeoutUntil,
+                    CanLogin = isActive
+                };
+
+                var result = BaseResult<UserStatusDto>.Success(statusDto);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<UserStatusDto>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}/status")]
+        public async Task<ActionResult<BaseResult<UserStatusDto>>> GetUserStatusById(int id)
+        {
+            try
+            {
+                var user = await _userService.GetUserByIdAsync(id);
+
+                if (user == null)
+                {
+                    var notFoundResult = BaseResult<UserStatusDto>.Fail(["User not found"]);
+                    return StatusCode(notFoundResult.StatusCode, notFoundResult);
+                }
+
+                var isActive = await _userService.IsUserActiveAsync(id);
+                var statusDto = new UserStatusDto
+                {
+                    IsActive = user.IsActive,
+                    IsBanned = user.IsBanned,
+                    TimeoutUntil = user.TimeoutUntil,
+                    CanLogin = isActive
+                };
+
+                var result = BaseResult<UserStatusDto>.Success(statusDto);
+                return StatusCode(result.StatusCode, result);
+            }
+            catch (Exception ex)
+            {
+                var result = BaseResult<UserStatusDto>.Fail([ex.Message]);
+                return StatusCode(result.StatusCode, result);
+            }
+        }
+
         private CourseResponseDto MapCourseToDto(Course course)
         {
             return new CourseResponseDto
@@ -392,5 +459,13 @@ namespace ELearning.API.Controllers
     {
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
+    }
+
+    public class UserStatusDto
+    {
+        public bool IsActive { get; set; }
+        public bool IsBanned { get; set; }
+        public DateTime? TimeoutUntil { get; set; }
+        public bool CanLogin { get; set; }
     }
 }

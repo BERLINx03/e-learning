@@ -30,6 +30,8 @@ namespace ELearning.Repositories
                 .Include(c => c.Instructor)
                 .Include(c => c.Lessons)
                 .Include(c => c.Enrollments)
+                .Include(c => c.Messages)
+                    .ThenInclude(m => m.Instructor)
                 .FirstOrDefaultAsync(c => c.Id == courseId);
         }
 

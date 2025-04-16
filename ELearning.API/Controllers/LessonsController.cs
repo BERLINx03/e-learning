@@ -43,19 +43,34 @@ namespace ELearning.API.Controllers
                     Title = lessonDto.Title,
                     Description = lessonDto.Description,
                     CourseId = lessonDto.CourseId,
-                    VideoUrl = lessonDto.VideoUrl,
                     DocumentUrl = lessonDto.DocumentUrl,
                     IsQuiz = lessonDto.IsQuiz,
                     Order = lessonDto.Order
                 };
 
+                // Set CreatedAt
+                lesson.CreatedAt = DateTime.UtcNow;
+
                 var createdLesson = await _lessonService.CreateLessonAsync(lesson);
-                var result = BaseResult<LessonResponseDto>.Success(MapLessonToDto(createdLesson));
+                var response = new LessonResponseDto
+                {
+                    Id = createdLesson.Id,
+                    Title = createdLesson.Title,
+                    Content = createdLesson.Content,
+                    Description = createdLesson.Description,
+                    CourseId = createdLesson.CourseId,
+                    Order = createdLesson.Order,
+                    VideoUrl = createdLesson.VideoUrl,
+                    DocumentUrl = createdLesson.DocumentUrl,
+                    IsQuiz = createdLesson.IsQuiz
+                };
+
+                var result = BaseResult<LessonResponseDto>.Success(response);
                 return StatusCode(result.StatusCode, result);
             }
             catch (Exception ex)
             {
-                var result = BaseResult<Lesson>.Fail([ex.Message]);
+                var result = BaseResult<LessonResponseDto>.Fail([ex.Message]);
                 return StatusCode(result.StatusCode, result);
             }
         }
@@ -228,45 +243,6 @@ namespace ELearning.API.Controllers
             }
         }
 
-        [Authorize(Roles = "Student")]
-        [HttpPost("{id}/quiz/submit")]
-        public async Task<ActionResult<BaseResult<int>>> SubmitQuizAnswers(int id, [FromBody] Dictionary<int, int> userAnswers)
-        {
-            try
-            {
-                var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                var lesson = await _lessonService.GetLessonByIdAsync(id);
-
-                if (lesson == null)
-                {
-                    var rr = BaseResult<int>.Fail(["Lesson Not Found"]);
-                    return StatusCode(rr.StatusCode, rr);
-                }
-
-                if (!lesson.IsQuiz)
-                {
-                    var rr = BaseResult<int>.Fail(["This lesson does not contain a quiz"]);
-                    return StatusCode(rr.StatusCode, rr);
-                }
-
-                var course = await _courseService.GetCourseByIdAsync(lesson.CourseId);
-                if (!await _courseService.IsStudentEnrolledAsync(course.Id, studentId))
-                {
-                    var rr = BaseResult<int>.Fail(["Forbidden"]);
-                    return StatusCode(rr.StatusCode, rr);
-                }
-
-                var score = await _lessonService.SubmitQuizAnswersAsync(id, studentId, userAnswers);
-                var result = BaseResult<int>.Success(score);
-                return StatusCode(result.StatusCode, result);
-            }
-            catch (Exception ex)
-            {
-                var result = BaseResult<int>.Fail([ex.Message]);
-                return StatusCode(result.StatusCode, result);
-            }
-        }
-
         [Authorize]
         [HttpGet("{id}/progress")]
         public async Task<ActionResult<BaseResult<LessonProgressDto>>> GetLessonProgress(int id)
@@ -289,7 +265,7 @@ namespace ELearning.API.Controllers
                     return StatusCode(rr.StatusCode, rr);
                 }
 
-                // Get the enrollment ID for this student and course
+                // Get the enrollment
                 var enrollment = await _courseService.GetEnrollmentAsync(course.Id, userId);
                 if (enrollment == null)
                 {
@@ -361,6 +337,7 @@ namespace ELearning.API.Controllers
                 Order = lesson.Order,
                 VideoUrl = lesson.VideoUrl,
                 DocumentUrl = lesson.DocumentUrl,
+                IsQuiz = lesson.IsQuiz
             };
         }
     }
@@ -370,7 +347,6 @@ namespace ELearning.API.Controllers
         public string Title { get; set; }
         public string Description { get; set; }
         public int CourseId { get; set; }
-        public string VideoUrl { get; set; }
         public string DocumentUrl { get; set; }
         public bool IsQuiz { get; set; }
         public int Order { get; set; }
