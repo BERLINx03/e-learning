@@ -337,6 +337,7 @@ namespace ELearning.API.Controllers
                 Order = lesson.Order,
                 VideoUrl = lesson.VideoUrl,
                 DocumentUrl = lesson.DocumentUrl,
+                IsQuiz = lesson.IsQuiz
             };
         }
     }
